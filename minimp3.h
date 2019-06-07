@@ -987,7 +987,11 @@ static void L3_reorder(float *grbuf, float *scratch, const uint8_t *sfb)
 
 static void L3_antialias(float *grbuf, int nbands)
 {
+#ifdef __ADSP215xx__
+    static const pm float g_aa[2][8] = {
+#else
     static const float g_aa[2][8] = {
+#endif
         {0.85749293f,0.88174200f,0.94962865f,0.98331459f,0.99551782f,0.99916056f,0.99989920f,0.99999316f},
         {0.51449576f,0.47173197f,0.31337745f,0.18191320f,0.09457419f,0.04096558f,0.01419856f,0.00369997f}
     };
@@ -1063,7 +1067,11 @@ static void L3_dct3_9(float *y)
 static void L3_imdct36(float *grbuf, float *overlap, const float *window, int nbands)
 {
     int i, j;
+#ifdef __ADSP215xx__
+    static const pm float g_twid9[18] = {
+#else
     static const float g_twid9[18] = {
+#endif
         0.73727734f,0.79335334f,0.84339145f,0.88701083f,0.92387953f,0.95371695f,0.97629601f,0.99144486f,0.99904822f,0.67559021f,0.60876143f,0.53729961f,0.46174861f,0.38268343f,0.30070580f,0.21643961f,0.13052619f,0.04361938f
     };
 
@@ -1249,7 +1257,11 @@ static void L3_decode(mp3dec_t *h, mp3dec_scratch_t *s, L3_gr_info_t *gr_info, i
 
 static void mp3d_DCT_II(float *grbuf, int n)
 {
+#ifdef __ADSP215xx__
+    static const pm float g_sec[24] = {
+#else
     static const float g_sec[24] = {
+#endif
         10.19000816f,0.50060302f,0.50241929f,3.40760851f,0.50547093f,0.52249861f,2.05778098f,0.51544732f,0.56694406f,1.48416460f,0.53104258f,0.64682180f,1.16943991f,0.55310392f,0.78815460f,0.97256821f,0.58293498f,1.06067765f,0.83934963f,0.62250412f,1.72244716f,0.74453628f,0.67480832f,5.10114861f
     };
     int i, k = 0;
@@ -1412,10 +1424,17 @@ static int16_t mp3d_scale_pcm(float sample)
     return s;
 }
 #else /* MINIMP3_FLOAT_OUTPUT */
+#ifdef __ADSP215xx__
+static inline float mp3d_scale_pcm(float sample)
+{
+    return __builtin_fscalbf(sample, -15);
+}
+#else
 static float mp3d_scale_pcm(float sample)
 {
     return sample*(1.f/32768.f);
 }
+#endif
 #endif /* MINIMP3_FLOAT_OUTPUT */
 
 static void mp3d_synth_pair(mp3d_sample_t *pcm, int nch, const float *z)
